@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ENCORE Login</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet"/>
+  <style>
+    body { font-family: 'Poppins', sans-serif; }
+  </style>
+</head>
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
+
+  <div class="bg-gray-800 p-8 rounded-xl shadow-xl w-full max-w-sm">
+    <h2 class="text-3xl font-bold text-center text-indigo-400 mb-6">ENCORE Login</h2>
+
+    <form id="loginForm" class="space-y-4">
+      <div>
+        <label class="block mb-1">Email</label>
+        <input type="email" name="email" required class="w-full p-3 rounded bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+      </div>
+      <div>
+        <label class="block mb-1">Password</label>
+        <input type="password" name="password" required class="w-full p-3 rounded bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+      </div>
+      <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded font-semibold transition">Login</button>
+    </form>
+
+    <p id="error" class="text-red-400 mt-4 text-center hidden">Invalid credentials. Please try again.</p>
+  </div>
+
+  <script>
+    const form = document.getElementById('loginForm');
+    const errorText = document.getElementById('error');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorText.classList.add('hidden');
+
+      const email = form.email.value;
+      const password = form.password.value;
+
+      try {
+        const res = await fetch('http://localhost:5000/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.error || 'Login failed');
+        }
+
+        // Save token & user info
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+
+        // Redirect to dashboard
+        window.location.href = 'dashboard.html';
+      } catch (err) {
+        errorText.classList.remove('hidden');
+        console.error(err.message);
+      }
+    });
+  </script>
+<script>
+    document.getElementById('loginForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+  
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value.trim();
+  
+      try {
+        const response = await fetch('http://localhost:5000/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+  
+        const data = await response.json();
+  
+        if (response.ok) {
+          localStorage.setItem('token', data.token);            // Save token for auth
+          localStorage.setItem('user', JSON.stringify(data.user));  // Save user info
+  
+          // Redirect to dashboard
+          window.location.href = '/dashboard.html';
+        } else {
+          alert(data.error || 'Login failed');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Server error. Please try again.');
+      }
+    });
+  </script>
+  
+</body>
+</html>
